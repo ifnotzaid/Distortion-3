@@ -30,3 +30,5 @@ Lowercasing.
 Removal of punctuation (.,?!-).
 
 Vocabulary restricted to the 33 Russian Cyrillic letters + Space + Blank.
+
+Dataset: SberDevices Golos (HuggingFace)
