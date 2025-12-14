@@ -31,4 +31,4 @@ Removal of punctuation (.,?!-).
 
 Vocabulary restricted to the 33 Russian Cyrillic letters + Space + Blank.
 
-Dataset: SberDevices Golos (HuggingFace)
+Dataset: [SberDevices Golos (HuggingFace)](https://huggingface.co/datasets/bond005/sberdevices_golos_10h_crowd)
