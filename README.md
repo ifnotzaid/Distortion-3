@@ -14,19 +14,11 @@ The study investigates:
 
 ---
 
-## 📊 Datasets
-We utilized two distinct datasets to test different acoustic domains:
+## 📊 Dataset
 
-### 1. SberDevices Golos (Crowd Split)
-* **Used for:** DeepSpeech, Wav2Vec 2.0, HuBERT, Whisper.
+### SberDevices Golos (Crowd Split)
 * **Domain:** Voice assistant commands (Short phrases, slang, brand names).
 * **Environment:** Noisy, crowdsourced mobile audio.
-
-### 2. Google Fleurs (ru_ru)
-* **Used for:** CRNN (Experimental).
-* **Domain:** Wikipedia sentences (Longer, formal speech).
-* **Size:** 500 sentences cached for experimental training.
-
 ---
 
 ## 🛠️ Models & Architectures
