@@ -40,7 +40,7 @@ We organized our experiments across three notebooks, implementing **6 distinct m
 ### 3. CRNN (Experimental)
 * **Notebook:** `whisper + crnn + deepspeech.ipynb`
 * **Architecture:** CNN (Feature Extractor) + BiLSTM (Sequence Modeling).
-* **Training:** Trained for **250 Epochs** on the **Google Fleurs** dataset (Wikipedia data).
+* **Training:** Trained for **250 Epochs**.
 * **Goal:** To test a lightweight architecture on complex sentence data.
 * **Outcome:** Despite 250 epochs, the model struggled to generalize on the diverse vocabulary of Wikipedia, resulting in high error rates.
 
