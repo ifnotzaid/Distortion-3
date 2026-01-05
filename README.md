@@ -1,81 +1,98 @@
-# 🇷🇺 Russian Speech Recognition: Benchmarking Architectures on the Golos Dataset
+# 🇷🇺 Russian Speech Recognition: Benchmarking Architectures
 
 [![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
 [![PyTorch](https://img.shields.io/badge/PyTorch-2.0%2B-orange)](https://pytorch.org/)
 [![HuggingFace](https://img.shields.io/badge/%F0%9F%A4%97-Transformers-yellow)](https://huggingface.co/)
-[![Dataset](https://img.shields.io/badge/Dataset-Golos-green)](https://huggingface.co/datasets/bond005/sberdevices_golos_10h_crowd)
 
 ## 📖 Project Overview
-This project presents a comparative analysis of Automatic Speech Recognition (ASR) architectures evaluated on the **SberDevices Golos** dataset (Russian). The study investigates the evolution of ASR technology by benchmarking three distinct approaches:
-1.  **Baseline:** Training a traditional CRNN (DeepSpeech 2) from scratch.
-2.  **Experiment:** Cross-lingual transfer learning (HuBERT).
-3.  **SOTA:** Domain adaptation of Transformers (Wav2Vec 2.0) and Zero-Shot evaluation (OpenAI Whisper).
+This project benchmarks the evolution of Automatic Speech Recognition (ASR) for the Russian language. We implemented and evaluated architectures ranging from manual mathematical decoders to custom CRNNs and state-of-the-art Transformers.
 
-We demonstrate that **Domain Adaptation** is the superior strategy for specific acoustic environments, achieving **8.17% WER** and outperforming larger generalized models.
+The study investigates:
+1.  **Mathematical Fundamentals:** Implementing CTC decoding from scratch.
+2.  **Legacy Architectures:** Training CRNN and DeepSpeech models to observe "data hunger."
+3.  **Modern Transfer Learning:** Adapting HuBERT, Wav2Vec 2.0, and Whisper to Russian.
 
 ---
 
-## 📊 The Dataset: SberDevices Golos
-We utilized the **Golos** dataset (Crowd Split), a challenging corpus representative of real-world acoustic environments provided by SberDevices.
+## 📊 Datasets
+We utilized two distinct datasets to test different acoustic domains:
 
-| Feature | Description |
-| :--- | :--- |
-| **Source** | Crowdsourced recordings via mobile phones. |
-| **Domain** | Voice assistant commands, search queries, slang, and brand names. |
-| **Complexity** | **Unconstrained Acoustics:** Includes background noise, echo, and varying microphone quality.<br>**Short Utterances:** Lack of semantic context (commands vs. sentences). |
-| **Size** | Total: ~1,240 hours. <br>**Used:** ~10 hours (Crowd Split) for training/benchmarking. |
-| **Preprocessing** | Resampled to 16kHz; Text normalized to lowercase Cyrillic (punctuation removed). |
+### 1. SberDevices Golos (Crowd Split)
+* **Used for:** DeepSpeech, Wav2Vec 2.0, HuBERT, Whisper.
+* **Domain:** Voice assistant commands (Short phrases, slang, brand names).
+* **Environment:** Noisy, crowdsourced mobile audio.
+
+### 2. Google Fleurs (ru_ru)
+* **Used for:** CRNN (Experimental).
+* **Domain:** Wikipedia sentences (Longer, formal speech).
+* **Size:** 500 sentences cached for experimental training.
 
 ---
 
 ## 🛠️ Models & Architectures
 
-We implemented and evaluated the following architectures to trace the progression of ASR technology:
+We organized our experiments across three notebooks, implementing **6 distinct models**:
 
-### 1. DeepSpeech 2 (Baseline)
-* **Architecture:** CRNN (Convolutional Recurrent Neural Network).
-* **Method:** Trained from scratch using CTC Loss.
-* **Goal:** To establish a baseline and demonstrate the high data requirements of RNN-based models.
+### 1. Rule-Based CTC (Manual Implementation)
+* **Notebook:** `hubert + rule-based ctc.ipynb`
+* **Type:** Mathematical Verification.
+* **Method:** A manual implementation of the CTC Forward Algorithm and Greedy Search using raw PyTorch tensors.
+* **Goal:** To verify the mathematical logic of alignment (Argmax → Collapse Repeats → Remove Blanks) independent of libraries.
 
-### 2. HuBERT (Cross-Lingual Experiment)
-* **Architecture:** Transformer (Hidden Unit BERT).
-* **Method:** Pre-trained on **English** (LibriSpeech) $\to$ Fine-tuned on **Russian**.
-* **Goal:** To test the transferability of acoustic features across languages.
+### 2. HuBERT (Cross-Lingual)
+* **Notebook:** `hubert + rule-based ctc.ipynb`
+* **Type:** Transformer (Hidden Unit BERT).
+* **Method:** **Cross-Lingual Transfer**. utilized a model pre-trained entirely on **English** (LibriSpeech) and fine-tuned on Russian.
+* **Goal:** To prove that acoustic features (phonemes) are universal and transferrable between languages.
 
-### 3. Wav2Vec 2.0 (The Specialist)
+### 3. CRNN (Experimental)
+* **Notebook:** `whisper + crnn + deepspeech.ipynb`
+* **Architecture:** CNN (Feature Extractor) + BiLSTM (Sequence Modeling).
+* **Training:** Trained for **250 Epochs** on the **Google Fleurs** dataset (Wikipedia data).
+* **Goal:** To test a lightweight architecture on complex sentence data.
+* **Outcome:** Despite 250 epochs, the model struggled to generalize on the diverse vocabulary of Wikipedia, resulting in high error rates.
+
+
+
+### 4. DeepSpeech 2 (Baseline)
+* **Notebook:** `whisper + crnn + deepspeech.ipynb`
+* **Architecture:** DeepSpeech 2 (CNN + GRU + CTC).
+* **Training:** Trained from scratch on **Golos** (Commands). Pushed for 40+ epochs until convergence (Loss < 0.5).
+* **Goal:** To demonstrate the "memorization" capacity of RNNs.
+* **Outcome:** The model successfully memorized the training data (Loss 0.43) but struggled to generalize to unseen test data, confirming the need for massive datasets for this architecture.
+
+
+
+### 5. Wav2Vec 2.0 (The Specialist)
+* **Notebook:** `wav2vec2 + small whisper.ipynb`
 * **Architecture:** Transformer (Self-Supervised).
-* **Method:** **Domain Adaptation**. Utilized a model pre-trained on generic Russian audio (`wav2vec2-large-xlsr-53-russian`) and fine-tuned specifically on the Golos command dataset.
-* **Goal:** To combine general linguistic knowledge with domain-specific vocabulary.
+* **Method:** **Domain Adaptation**. utilized a model pre-trained on generic Russian audio and fine-tuned specifically on the Golos dataset.
+* **Goal:** To achieve maximum accuracy by combining general linguistic knowledge with domain-specific vocabulary.
 
-### 4. OpenAI Whisper (The Generalist)
-* **Architecture:** Encoder-Decoder Transformer (Weak Supervision).
+
+
+### 6. OpenAI Whisper (The Generalist)
+* **Notebook:** `wav2vec2 + small whisper.ipynb`
+* **Architecture:** Encoder-Decoder Transformer.
 * **Method:** Zero-Shot Inference (Small).
-* **Goal:** To benchmark against the industry State-of-the-Art and analyze generalization capabilities.
+* **Goal:** To benchmark against the industry State-of-the-Art.
 
 ---
 
 ## 🏆 Comparative Results
 
-Models were evaluated using **Word Error Rate (WER)** and **Character Error Rate (CER)** on the unseen test split.
-
-| Model | Architecture | Training Method | WER 📉 | CER 📉 | Verdict |
-| :--- | :--- | :--- | :--- | :--- | :--- |
-| **DeepSpeech 2** | CRNN | From Scratch | **95.62%** | **53.42%** | **Failed.** High acoustic confusion; insufficient training data for convergence. |
-| **HuBERT (En)** | Transformer | Cross-Lingual | **57.11%** | **15.02%** | **Promising.** Learned acoustics but lacked Russian grammar knowledge. |
-| **Whisper** | Transformer | Zero-Shot | **34.86%*** | **18.86%** | **Formatting Mismatch.** High semantic accuracy, but penalized for outputting formatted text (e.g., "60" vs "sixty"). |
-| **Wav2Vec 2.0** | Transformer | **Domain Adaptation** | **8.17%** | **1.51%** | **Best Performance.** Perfect alignment of acoustics and domain vocabulary. |
-
-### 🧪 Key Findings
-1.  **Transfer Learning is Essential:** Training from scratch on <50 hours of data yields unusable results (95% WER), whereas Transfer Learning yields acceptable results even with cross-lingual models.
-2.  **Domain Adaptation Beats Generalization:** While Whisper is "smarter" (understands context better), the Wav2Vec 2.0 model fine-tuned on the specific dataset achieved significantly lower error rates by learning the specific "slang" and formatting rules of the domain.
-3.  **Generalization Capability:** In our Pangram stress test (out-of-domain vocabulary), the Wav2Vec 2.0 model successfully transcribed complex words (*"French rolls"*) that were not present in the training commands, proving robust acoustic modeling.
+| Model | Notebook Source | WER 📉 | CER 📉 | Verdict |
+| :--- | :--- | :--- | :--- | :--- |
+| **CRNN (Fleurs)** | `whisper + crnn...` | **~0.82** | **~0.32** | **Insufficient Data.** 500 sentences were not enough for the LSTM to learn complex Wikipedia grammar. |
+| **DeepSpeech (Golos)**| `whisper + crnn...` | **95.62%** | **53.42%** | **Overfitting.** Memorized training data (Loss 0.43) but failed on test data. |
+| **HuBERT (En)** | `hubert + rule...` | **57.11%** | **15.02%** | **Proof of Concept.** Validated acoustic transfer, but lacked Russian grammar knowledge. |
+| **Whisper (Small)** | `wav2vec2 + small...`| **34.86%** | **18.86%** | **Formatting Mismatch.** High semantic accuracy, penalized for outputting digits ("60") vs text. |
+| **Wav2Vec 2.0** | `wav2vec2 + small...`| **8.17%** | **1.51%** | **The Winner.** Perfect alignment of acoustics and domain vocabulary. |
 
 ---
 
+## 💻 Installation & Usage
 
-🔗 References
-Dataset: SberDevices Golos
-
-Wav2Vec 2.0: Baevski et al., "wav2vec 2.0: A Framework for Self-Supervised Learning of Speech Representations", 2020.
-
-DeepSpeech 2: Amodei et al., "Deep Speech 2: End-to-End Speech Recognition in English and Mandarin", 2015.
+### Requirements
+```bash
+pip install torch torchaudio transformers datasets jiwer soundfile librosa
